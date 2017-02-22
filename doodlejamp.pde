@@ -17,13 +17,7 @@ PImage brokenbroken;
 PImage moving;
 int xSpeed = 1;
 int springReoccurenceCounter = 0;
-int monsterReoccurenceCounter = 0;
-
-
 boolean hasShiftedOnce = false;
-
-ArrayList<PImage> monsterImages= new ArrayList<PImage>();
-
 int score = 0;
 
 void setup() {
@@ -37,9 +31,6 @@ void setup() {
   broken = loadImage("https://i.imgur.com/Q9Hoge9.png");
   brokenbroken = loadImage("https://i.imgur.com/8VZid0f.png");
   guy = loadImage("http://img1.wikia.nocookie.net/__cb20130403202424/doodle-jump/images/5/5c/Doodler.png");
-  monsterImages.add(loadImage("https://i.imgur.com/ITjsyD2.png"));
-  monsterImages.add(loadImage("https://i.imgur.com/E422rH8.png"));
-  monsterImages.add(loadImage("https://i.imgur.com/qQZIWb7.png"));
   moving = loadImage("https://i.imgur.com/Rgp9RzM.png");
 
   //generates the starting couple of platforms
@@ -47,7 +38,7 @@ void setup() {
     platforms.add(new Platform((int)random(0, width), (int)random(height/2, height), platformWidth, platformHeight, 1));
   for (int i = 0; i<3; i ++) {
     platforms.add(new Platform((int)random(0, width), (int)random(0, height/2), platformWidth, platformHeight, 1));
-    //generates 1 starting SpringPlatforms
+    //generates 1 starting SpringPlatform
   }
   platforms.add(new PlatformSpring((int)random(0, width), (int)random(height/2, height), platformWidth, platformHeight, 2));
 
@@ -64,7 +55,6 @@ void draw() {
   pushMatrix();
   //start  screen
   if (screen == 1) {
-    //    background(bckground);
     image(bckground, width/2, height/2, width, height);
     fill(0);
     text("PRESS P TO PLAY", 123, 100);
@@ -73,7 +63,6 @@ void draw() {
 
   //play screen
   if (screen ==2) {
-    //    background(bckground);
     image(bckground, width/2, height/2, width, height);
     fill(0);
     text("Score: " + (int)score, width-100, height-50);
@@ -112,13 +101,6 @@ void draw() {
             ((BrokenPlatform)plat).switchDisplay();
           }
         }
-        // if you are falling and collide into a monster, it shoots you up, and any other way you get shot down
-        if (plat.type == 3 && velocityY > 0) {
-          velocityY = -40;
-          isSpinning = true;
-        } else if (plat.type == 3) {
-          velocityY = 50;
-        }
       }
       //moving platform speed
       if (plat.type == 5) {
@@ -153,29 +135,21 @@ void draw() {
       generateNewSpringPlatform();
       springReoccurenceCounter = score;
     }
-    // having the monster reoccur every 1300 points
-    if (score - monsterReoccurenceCounter > 1300) {
-      generateNewMonster();
-      monsterReoccurenceCounter = score;
-    }
   }
   // if the player falls off the screen, then text appears saying "press r to play again"
   if (playerY>height+100 && screen  == 2) {
     text("PRESS R TO PLAY AGAIN", width/2-70, height/4);
   }
-
   popMatrix();
 }
 
-
+//key listeners
 void keyPressed() {
-  if (screen ==1)
+  //starts game
+  if (screen == 1)
     if (key == 'p')
       screen = 2;
-
-  if (key == ' ')
-    jump();
-
+  //restarts game 
   if (key == 'r') {
     screen = 2;
     playerX = 150;
@@ -184,12 +158,12 @@ void keyPressed() {
     bounceHeight = -15;
     platforms.clear();
     springReoccurenceCounter = 0;
-    monsterReoccurenceCounter = 0;
     hasShiftedOnce = false;
     score = 0;
     setup();
   }
 }
+
 // makes the player jump
 void jump() {
   velocityY = bounceHeight;
@@ -200,7 +174,6 @@ void clear() {
   for (int i = 0; i < platforms.size (); i++) {
     Platform platform = platforms.get(i);
     if (platform.y >= height+20) {
-
       if (platform.type == 2) {
         platforms.remove(i);
       } 
@@ -223,34 +196,27 @@ void clear() {
   }
 }
 
-//generates a new platform in the top half of the screen after one is cleared
+//these methods generate a new platform in the top half of the screen after one is cleared
 void generateNewPlatform() {
   platforms.add(new Platform((int)random(0, width), 0, platformWidth, platformHeight, 1));
 }
-
 void generateNewSpringPlatform() {
   platforms.add(new PlatformSpring((int)random(0, width), 0, platformWidth, platformHeight, 2));
 }
-
-void generateNewMonster() {
-  platforms.add(new Monster((int)random(0, width), 0, platformWidth, platformHeight, 3, monsterImages.get((int)random(0, 3))));
-}
-
 void generateBrokenPlatform() {
   platforms.add(new BrokenPlatform((int)random(0, width), 0, platformWidth, platformHeight, 4, broken, brokenbroken));
 }
-
 void generateMovingPlatform() {
   platforms.add(new MovingPlatform((int)random(30, width-30), 0, platformWidth, platformHeight, 5));
 }
-// blueprint for a regular platform
+
+//regular platform
 class Platform {
   int x;
   int y;
   int width;
   int height;
   int type;
-
   Platform(int x, int y, int width, int height, int type) {
     this.x = x;
     this.y = y;
@@ -266,29 +232,18 @@ class Platform {
     score += (0.1*speed);
   }
 }
-// platform for a spring platform
+
+//spring platform
 class PlatformSpring extends Platform {
   PlatformSpring(int x, int y, int width, int height, int type) {
     super(x, y, width, height+5, type);
   }
-
   void display() {
     image(spring, x, y, width, height);
   }
 }
-//blueprint for the monsters
-class Monster extends Platform {
-  PImage img;
-  Monster(int x, int y, int width, int height, int type, PImage img) {
-    super(x, y, width + 110, height + 140, type);
-    this.img = img;
-  }
 
-  void display() {
-    image(img, x, y, width, height);
-  }
-}
-// blueprint for a broken platform
+//broken platform
 class BrokenPlatform extends Platform {
   PImage current;
   PImage otherstate;
@@ -311,15 +266,13 @@ class BrokenPlatform extends Platform {
     }
   }
 }
-// how the moving platform moves left and right
+
+//moving platform
 class MovingPlatform extends Platform {
   MovingPlatform(int x, int y, int width, int height, int type) {
     super(x, y, width, height, type);
   }
-
   void display() {
     image(moving, x, y, width, height);
   }
 }
-
-
